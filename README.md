@@ -1,3 +1,6 @@
+# Code Phase
+This has all the code files for the project 
+
 # Implementing-Iterative-Methods
 This project implements three iterative solvers for linear systems of the form
 
