@@ -19,12 +19,12 @@ This has all the LaTeX files for the project.
 Final_Latex_PDF has the final LaTeX pdf. Files include:
 - 574_Masters_Project.pdf
 Full_Latex_files has all of the raw LaTeX files. Files include: 
-- bicgstab_residuals.png  -> gotten from "Project Code"
-- cg_residuals.png  -> gotten from "Project Code"
-- gmres_residuals.png  -> gotten from  "Project Code"
+- bicgstab_residuals.png     -> gotten from "Project Code"
+- cg_residuals.png           -> gotten from "Project Code"
+- gmres_residuals.png        -> gotten from  "Project Code"
 - main.tex
-- Positive_definite.png  -> gotten from "Research Code"
-- quadratic_forms.png
+- Positive_definite.png      -> gotten from "Research Code"
+- quadratic_forms.png        -> gotten from "Research Code"
 - refs-style.bst
 - refs.bib
 All of the LaTeX is qriten in overleaf. 
