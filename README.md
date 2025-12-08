@@ -62,7 +62,7 @@ Results:
 - method time
 
 ---
-## Run the research code 
+## Run the research code:
 Open vscode
 - Python 3.11.4 - was used for these experments
 - pip install -r requirements.txt
