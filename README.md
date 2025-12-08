@@ -1,20 +1,3 @@
-# Code Phase
-This has all the code files for the project 
-project code:
-- lauange: Julia
-- Writen in: colab
-Has all of the:
-- methods
-- plots
-- numbers for final results
-
-research code:
-- lauange: python
-has the examples of the
-- diffrent matrix digram
-- heatmap for the positive definite matrix
-
-
 # Implementing-Iterative-Methods
 This project implements three iterative solvers for linear systems of the form
 
@@ -30,6 +13,22 @@ GMRES (Generalized Minimal Residual) builds a Krylov subspace and computes the s
 
 # Method 3: BiCGSTAB
 BiCGSTAB (Bi-Conjugate Gradient Stabilized) is designed for general nonsymmetric matrices and improves stability by combining bi-conjugacy ideas with an additional smoothing step.
+
+# Code Phase
+This has all the code files for the project 
+project code:
+- lauange: Julia
+- Writen in: colab
+Has all of the:
+- methods
+- plots
+- numbers for final results
+
+research code:
+- lauange: python
+has the examples of the
+- diffrent matrix digram
+- heatmap for the positive definite matrix
 
 # Run
 Run the project code:
