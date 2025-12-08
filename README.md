@@ -37,7 +37,7 @@ has the examples of the
 
 # Run
 ---
-Run the project code:
+## Run the project code:
 Go to project code in colab and run the following inorder 
 - function spd_matrix
 - function conjugate_gradient
@@ -62,7 +62,7 @@ Results:
 - method time
 
 ---
-To run the research code 
+## Run the research code 
 Open vscode
 - Python 3.11.4 - was used for these experments
 - pip install -r requirements.txt
