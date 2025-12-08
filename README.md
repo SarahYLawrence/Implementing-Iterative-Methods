@@ -14,16 +14,4 @@ GMRES (Generalized Minimal Residual) builds a Krylov subspace and computes the s
 # Method 3: BiCGSTAB
 BiCGSTAB (Bi-Conjugate Gradient Stabilized) is designed for general nonsymmetric matrices and improves stability by combining bi-conjugacy ideas with an additional smoothing step.
 
-# Run
-run the following in order 
-- function spd_matrix
-- function conjugate_gradient
-- function gmres_residuals
-- function bicgstab_residuals
-If you want to see the plots run the follwing after each function:
-- using Plots
-This will store the plots and display them.
-If you want to see the evaluation run the follwing after each function
-- Random.seed
-Then run the last two code blocks
 
