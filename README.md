@@ -1,7 +1,7 @@
 # Implementing-Iterative-Methods
 This project implements three iterative solvers for linear systems of the form
 
-𝐴𝑥 = 𝑏
+                  𝐴𝑥 = 𝑏
 
 where A is a symmetric positive definite matrix and b is an n-dimensional vector.
 Each method is implemented as a function that takes inputs (A, b) and returns the approximate solution and its residual history.
