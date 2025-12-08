@@ -1,5 +1,19 @@
 # Code Phase
 This has all the code files for the project 
+project code:
+- lauange: Julia
+- Writen in: colab
+Has all of the:
+- methods
+- plots
+- numbers for final results
+
+research code:
+- lauange: python
+has the examples of the
+- diffrent matrix digram
+- heatmap for the positive definite matrix
+
 
 # Implementing-Iterative-Methods
 This project implements three iterative solvers for linear systems of the form
