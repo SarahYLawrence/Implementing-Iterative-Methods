@@ -37,21 +37,25 @@ Go to project code in colab and run the following inorder
 - function conjugate_gradient
 - function gmres_residuals
 - function bicgstab_residuals
+
 If you want to see the plots run the follwing after each function:
 - using Plots
+
 Results:
 - bicgstab_residuals.png
 - cg_residuals.png
 - gmres_residuals.png
+
 This will store the plots and display them.
 If you want to see the evaluation run the follwing after each function
 - Random.seed
-Then run the last three code blocks
+- Then run the last three code blocks
+
 Results:
 - method resudials
 - method time
 
-
+---
 To run the research code 
 Open vscode
 - Python 3.11.4 - was used for these experments
