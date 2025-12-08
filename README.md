@@ -15,19 +15,18 @@ GMRES (Generalized Minimal Residual) builds a Krylov subspace and computes the s
 BiCGSTAB (Bi-Conjugate Gradient Stabilized) is designed for general nonsymmetric matrices and improves stability by combining bi-conjugacy ideas with an additional smoothing step.
 
 # Research Phase
-This has all the code files for the project 
-project code:
-- lauange: Julia
-- Writen in: colab
-Has all of the:
-- methods
-- plots
-- numbers for final results
-
-research code:
-- lauange: python
-has the examples of the
-- diffrent matrix digram
-- heatmap for the positive definite matrix
+This has all the LaTeX files for the project. 
+Final_Latex_PDF has the final LaTeX pdf. Files include:
+- 574_Masters_Project.pdf
+Full_Latex_files has all of the raw LaTeX files. Files include: 
+- bicgstab_residuals.png  -> gotten from "Project Code"
+- cg_residuals.png  -> gotten from "Project Code"
+- gmres_residuals.png  -> gotten from  "Project Code"
+- main.tex
+- Positive_definite.png  -> gotten from "Research Code"
+- quadratic_forms.png
+- refs-style.bst
+- refs.bib
+All of the LaTeX is qriten in overleaf. 
 
 
