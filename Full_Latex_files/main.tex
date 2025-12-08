@@ -1,0 +1,463 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{subfigure}
+
+ \geometry{
+ a4paper,
+ total={170mm,257mm},
+ left=20mm,
+ top=20mm,
+ }
+ \usepackage{graphicx}
+ \usepackage{titling}
+
+ \title{Iterative Methods for Solving Large Sparse Linear Systems
+}
+\author{Sarah Lawrence}
+\date{Dec 2025}
+ 
+ \usepackage{fancyhdr}
+\fancypagestyle{plain}{%  the preset of fancyhdr 
+    \fancyhf{} % clear all header and footer fields
+    \fancyfoot[L]{\thedate}
+    \fancyhead[L]{574 Masters Project}
+    \fancyhead[R]{\theauthor}
+}
+\makeatletter
+\def\@maketitle{%
+  \newpage
+  \null
+  \vskip 1em%
+  \begin{center}%
+  \let \footnote \thanks
+    {\LARGE \@title \par}%
+    \vskip 1em%
+    %{\large \@date}%
+  \end{center}%
+  \par
+  \vskip 1em}
+\makeatother
+
+\usepackage{lipsum}  
+\usepackage{cmbright}
+
+\begin{document}
+
+\maketitle
+
+\noindent\begin{tabular}{@{}ll}
+    Student & \theauthor\\
+     Instructor &  James Quinlan\\
+\end{tabular}
+
+\section*{Abstract}
+This paper talks about the implementation and analysis of iterative methods for solving large, sparse linear systems. It focus on Conjugate Gradient (CG), GMRES, and BiCGSTAB. The study begins with a brief history of iterative methods, followed by detailed descriptions and implementations of each algorithm. Then the performance is evaluated using selected metrics, and the results are illustrated with plots to compare convergence rates under different conditions.
+
+\section*{Introduction}
+
+The goal is to implement iterative methods for solving large, sparse linear systems (conjugate gradient, GMRES, BiCGSTAB) and study convergence rates for different conditions. Iterative methods start with an initial guess and repeatedly filter it to get closer to the actual solution. Iterative methods don't necessarily produce the exact solution; instead, they get to a specified tolerance. Direct methods, on the other hand, use a sequence of steps to obtain an exact solution. Because it obtains the exact solution, direct methods are too slow and memory-intensive to handle large sparse matrices. 
+
+Iterative methods are for solving large, sparse linear systems. A sparse linear system/matrix is an equation that takes the form of Ax=b. This is where A is a large $n * n$ matrix, and where most of the entries are zero making it sparse. The methods that will be used are Conjugate Gradient, GMRES, and BiCGSTAB since they are specific iterative algorithms to solve large, sparse linear systems. These methods will be taken and studied to see their convergence rates for different conditions. Before discussing the implementation, let’s review the history of iterative methods.
+
+\section*{History of Iterative Methods}
+Iterative methods were originally used for nonlinear problems. However, these problems were already solved by eliminating one variable after the other (Gaussian elimination) or other suitable methods. The importance of iterative methods was not discovered till computers started to tackle larger and larger
+problems. \cite{Gander} As Gauss once said, “You will hardly ever again eliminate directly, at least not when you have more than 2 unknowns” \cite{Gauss}. Gauss realized that direct elimination becomes complicated and very slow as the number of unknowns increases. Gauss was the first to formalize and popularize solving large systems of linear equations. Unfortunately, he never published his works. After the death of Gauss in 1855, hundreds of notes were discovered in his desk. It required half a century to edit and publish the enormous amount of work Gauss produced. Only in 1903 did Werke publish volume 9 with most of Gauss's works. \cite{Gander} That's how Gaussian elimination became well known, but this is a direct method. 
+
+Another type of method to tackle solving large systems of linear equations was Carl Gustav Jacobi. Unaware of the Gauss procedure, Carl Gustav Jacobi in 1804-1851 presented a new method for solving the linear system. \cite{Gander} The method he created is a substitution-based method. It calculates the next iteration's values by using the previous iteration's values. This became another popular iterative method. Soon, more people jumped into solving large linear systems. 
+
+Philipp Ludwig von Seidel was a student of Jacobi in K¨ Königsberg. He sometimes performed numerical calculations for Jacobi. Once he became a professor himself, he made various applications of linear systems to scientific research. Seidel ended up refining Gauss’s approach to produce what is now called the Gauss-Seidel iterative method. Some other algorithms that soon followed are Conjugate Gradient, GMRES, and BiCGSTAB. 
+\\\\\
+
+\section*{Tested Methodology}
+\subsection*{First Iterative Method}
+Conjugate Gradient(CG)
+\subsubsection*{Background}
+Conjugate Gradient was invented by Magnus Hestenes, Eduard Stiefel, and Cornelius Lanczos. They were both  mathematicians associated with the National Bureau of Standards. (\cite{Magnus}) This method is for solving large, sparse systems of linear equations of the form Ax=b, but A has to be a positive-definite or indefinite matrix
+\[
+A x = b
+\]
+\begin{itemize}
+    \item $A$ symmetric, positive-definite matrix
+    \item $x$ is the unknown vector
+    \item $b$ is the known right-hand side vector
+\end{itemize}
+ A has to be positive-definite because it is convex. If it's convex, there is one unique minimum, so CG can converge. However, if A is not positive definite and instead flat or saddle-shaped, a minimum might not exist. An excellent visual by Jonathan Richard Shewchuk \cite{Jonathan} shows what these look like. Figure 1 shows my reproduction of his visual.\\ \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{ quadratic_forms.png}
+    \caption{Visualization of Matrix Types}
+\end{figure}\\
+\begin{itemize}
+    \item $(a)$ Positive-definite matrix $\to$ bowl $\to$ Converges
+    \item $(b)$ Negative-definite matrix $\to$ inverted bowl $\to$ Fails or unstable
+    \item $(c)$ Positive-indefinite $\to$ valley $\to$ Diverges
+    \item $(d)$ Indefinite matrix $\to$ saddle $\to$ Breaks down
+\end{itemize}
+ (a) is what will be primarily focused on. Having examined the three-dimensional shape. It's now time to present its two-dimensional representation as a heatmap. The flat heatmap of a positive definite matrix can be seen in Figure 2.  \\\\\\\\\\\\\\
+ \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.3\textwidth]{ Positive_definite.png}
+    \caption{Positive Definite Matrix Heatmap}
+\end{figure}
+In this image, all diagonal entries are positive. This is due to the fact that they are often much larger than off-diagonal terms. Notice how there is mirror symmetry across the main diagonal. But why are symmetric properties important? They are because CG relies on inner-product geometry to produce conjugate directions and guarantee convergence. Without symmetry, that isn't possible. CG constructs its iterations inside the Krylov subspace. The symmetry and positive-definiteness of A ensure that the method produces mutually A-orthogonal search directions within this subspace. In short, CG is taking advantage of the unique properties of positive-definite matrices and the symmetry to generate conjugate directions instead of arbitrary directions. This allows it to converge in at most an n×n system. This method is favored because it is memory efferent and converges faster than methods like Jacobi or Gauss Seidel. It is faster due to it builds optimal search directions that avoid redoing work. 
+
+\subsubsection*{Implementation}
+To implement the Conjugate Gradient (CG) method, it is important to first identify its required inputs. CG needs the known vectors A and b, the default values for the initial guess, tolerance, and max iterations. This is the input for the function. Next to not mess up the original values, the initial estimate x is copied. Then the first residual was acquired. A copy of this residual is used as the initial search direction. Then the squared norm of the residual is also calculated. The first residual is then stored for plotting purposes. The code for the setup can be seen below.\\\\
+\begin{minipage}[t]{0.45\textwidth}
+\bf{Initialization:}
+\begin{verbatim}
+# conjugate gradient
+function conjugate_gradient(A, b; x0=zero(b), tol=1e-8, maxiter=1000)
+    x = copy(x0) # current estimate
+    r = b - A * x # residual: how far x is from the true solution
+    p = copy(r) # search direction
+    rs_old = dot(r, r) # squared norm of the residual
+
+    residuals = [sqrt(rs_old)] # store the first residual
+\end{verbatim}
+\end{minipage}\\\\
+Next, after setup, whether it converged or not needs to be checked. This is done by seeing if the residual norm is small enough; if it has, then CG has converged. The code for this can be seen in "Check Convergence:". If it hasn't converged, the search direction needs to be updated. Now using $beta = rs_new / rs_old$ we determine how much of the previous direction is kept (called beta). Then, adding the new residual with beta times the previous direction makes the new direction. Finally, the once new squared norm of the residual is now becomes the old residual. This can be seen in "New Search Direction:".\\\\
+\begin{minipage}[t]{0.45\textwidth}
+\bf{Check Convergence:}
+\begin{verbatim}
+    # Check Convergence
+    rs_new = dot(r, r)
+    push!(residuals, sqrt(rs_new))
+    if sqrt(rs_new) < tol
+        rintln("Converged in $k iterations")
+        return x
+\end{verbatim}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.37\textwidth}
+\bf{New Search Direction:}
+\begin{verbatim}
+    # Update Search Direction
+    beta = rs_new / rs_old
+    p = r + beta * p
+    rs_old = rs_new
+\end{verbatim}
+\end{minipage}
+\subsection*{Second Iterative Method}
+Generalized Minimal Residual method (GMRES)
+\subsubsection*{Background}
+GMRES was invented by Yousef Saad and Martin H. Schultz. They were both associated with the Society for Industrial and Applied Mathematics. \cite{Yousef} This method is the same as CG, which is used for solving large, sparse systems of linear equations of the form Ax=b. However, there are some differences. One being CG requires A to be symmetric positive definite. GMRES works for any nonsingular matrix, including nonsymmetric and indefinite matrices. Unlike CG, GMRES does not require  A to be symmetric or positive definite.
+\[
+A x = b
+\]
+\begin{itemize}
+\item $A$ is a general square matrix (can be nonsymmetric)
+\item $x$ is the unknown vector
+\item $b$ is the known right-hand side vector
+\end{itemize}
+
+Another important difference is the Krylov subspace. CG enforces A-conjugacy and minimizes the error in the A-norm, whereas GMRES uses the Arnoldi process to build an orthonormal basis and minimizes the residual norm at each iteration. \cite{Juan}
+
+Finally, unlike CG, which has a fixed memory, GMRES has a growing storage and computational cost problem. This is due to it storing all previous Krylov basis vectors. 
+
+\subsubsection*{Implementation}
+To implement the Generalized Minimal Residual method, it is important to first identify its required inputs. GMRES needs the known vectors A and b, the default values for the initial guess, tolerance, and max iterations. Next, the number of entries in the vector b is collected. Then the initial guess is copied, and the initial residuals are acquired, like in the CG function. The magnitude of that initial error is then calculated. Finally, the norms are stored at each step. After the initialization, the code moves into the Arnoldi process. The Arnoldi process builds a basis of vectors V for the Krylov subspace by repeatedly multiplying by A and orthogonalizing the result using modified Gram–Schmidt. The modified Gram–Schmidt is used to keep the basis vectors stable when orthogonalizing the new vector w against all previous basis vectors.
+\\\\
+\begin{minipage}[t]{0.45\textwidth}
+\bf{Initialization:}
+\begin{verbatim}
+function gmres_residuals(A, b; x0=zero(b), 
+tol=1e-8, maxiter=100)
+    n = length(b) # number of entries in the vector b
+    x = copy(x0) # current estimate
+    r0 = b - A*x # initial residual
+    beta = norm(r0) # magnitude of that initial error
+    
+    residuals = [beta] # residuals array 
+                       # stores the norms at each step 
+\end{verbatim}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.37\textwidth}
+\bf{Arnoldi process:}
+\begin{verbatim}
+# Arnoldi process
+    V = zeros(n, maxiter+1) # basis vectors
+    H = zeros(maxiter+1, maxiter) 
+    # upper Hessenberg matrix
+    V[:,1] = r0 / beta # orthonormal basis 
+                       # vector
+    
+    for j in 1:maxiter 
+        w = A * V[:,j]
+        # modified Gram–Schmidt
+        for i in 1:j
+            H[i,j] = dot(V[:,i], w)
+            w -= H[i,j] * V[:,i]
+        end
+        # new basis vector
+        H[j+1,j] = norm(w)
+        if H[j+1,j] != 0
+            V[:,j+1] = w / H[j+1,j]
+        end
+\end{verbatim}
+\end{minipage}
+\\\\\\\\\\
+Now that the Arnoldi process is completed, let's move into the least squares problem. We use least squares to minimize the residual within the Krylov subspace. This can be seen in "Least Squares Min". Then we check whether the weather convergence has occurred. This can be seen in "Check Convergence". 
+\\\\
+\begin{minipage}[t]{0.45\textwidth}
+\bf{Least Squares Min:}
+\begin{verbatim}
+# Solve least squares min ||beta e1 - H y||
+        e1 = zeros(j+1); e1[1] = beta
+        y = H[1:j+1,1:j] \ e1
+        x_approx = x0 + V[:,1:j]*y
+\end{verbatim}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.37\textwidth}
+\bf{Check Convergence:}
+\begin{verbatim}
+# residual norm for plotting
+        res = norm(b - A*x_approx)
+        push!(residuals, res)
+        
+# check convergence
+    if res < tol
+        println("GMRES converged in $j iterations")
+        return x_approx, residuals
+    end
+\end{verbatim}
+\end{minipage}
+\subsection*{Third Iterative Method}
+Biconjugate gradient stabilized (BiCGSTAB)
+\subsubsection*{Background}
+BiCGSTAB was "introduced by
+H.A. Van der Vorst, S. Cools, and Wim Vanroose proposed an optimization known as pipelined
+BiCGStab". \cite{Mykhailo} Like CG and GMRES, BiCGSTAB is an iterative Krylov subspace method used for solving large, sparse linear systems of the form Ax=b. 
+\[
+A x = b
+\]
+\begin{itemize}
+\item $A$ is a general square matrix (can be nonsymmetric)
+\item $x$ is the unknown vector
+\item $b$ is the known right-hand side vector
+\end{itemize}
+
+BiCGSTAB is designed for general nonsymmetric matrices and was introduced as a smoother converging version of both BiCG and CGS methods. It combines the low memory cost of CG‐type methods with smoother and more stable convergence than BiCG. 
+
+This method was developed to fix the issue of non-symmetric linear systems while also avoiding the irregular convergence patterns of the conjugate gradient squared (CGS) method. \cite{Mykhailo} CGS is not the same as CG, since CGS is for solving nonsymmetric systems while CG is for symmetric systems.
+
+BiCGSTAB is favored due to it's structure allowing for efficient parallelization. \cite{Laurence} BiCGSTAB also handles some matrices better than GMRES. This is because GMRES requires storing all Krylov basis vectors. This is costly for large systems. However, BiCGSTAB only stores a small number of vectors and scalars each iteration. This makes it more memory-efficient. One down side is that BiCGSTAB may not always provide the smoothest convergence and can still exhibit breakdowns \cite{graves}, but it is still widely used for its memory usage and convergence speed. 
+
+\subsubsection*{Implementation}
+To implement the Biconjugate gradient stabilized method, it is important to first identify its required inputs. BiCGSTAB needs the known vectors A and b, the default values for the initial guess, tolerance, and max iterations. After setting up the function, inputs its time for initialization. In the code, the first thing that is initialized is  the size of the problem. Then, the current guess of the solution. Next is the residual and the fixed copy of the initial residual. The initializing scalars  to 1. Finally, set the two auxiliary vectors. The code for this is in "Initialization".\\\\
+\begin{minipage}[t]{0.45\textwidth}
+\bf{Initialization:}
+\begin{verbatim}
+function bicgstab_residuals(A, b; x0=zero(b), tol=1e-8, maxiter=1000)
+    n = length(b) # determines the size of the problem
+    x = copy(x0) # current approximation of the solution
+    r = b - A*x # residual
+    r_hat = copy(r) # fixed copy of the initial residual (used for or computing scalars)
+    rho_old = alpha = omega = 1.0 # scalars initialized to 1
+    v = zeros(n) #  auxiliary vector used in the iterations
+    p = zeros(n) # auxiliary vector used in the iterations
+    
+    residuals = [norm(r)] # list storing the norm of the residual at each step
+    
+\end{verbatim}
+\end{minipage}\\\\
+After initialization, it finds the search direction. The code for this can be seen in "Search Direction". The search direction p in BiCGSTAB determines the direction along which the solution is updated in each iteration. It is updated using a combination of the current residual and the previous search direction. This update ensures that each new direction builds on prior progress while achieving convergence. Updating variables after this is important this is because vector v = A*p and the scalar alpha determine how far to move along the search direction. This is so that the residual is reduced as much as possible in that direction. Then s, t, and omega remove remaining error components. This allows the method to update x and a smaller residual r. The norm of r is saved for analysis.
+\\\\
+\begin{minipage}[t]{0.45\textwidth}
+\bf{Search Direction:}
+\begin{verbatim}
+for k in 1:maxiter
+        rho = dot(r_hat, r)
+        # the method breaks down because a division by zero
+        if rho == 0 
+            println("Breakdown: rho=0")
+            break
+        end
+        # update the search direction p
+        if k == 1
+            p = r
+        else
+            beta = (rho/rho_old) * (alpha/omega)
+            p = r + beta*(p - omega*v)
+        end
+\end{verbatim}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.37\textwidth}
+\bf{Updating Variables:}
+\begin{verbatim}
+        v = A*p # matrix-vector product
+        alpha = rho / dot(r_hat, v) # reduce the residual in the current direction
+        s = r - alpha*v # residual after 
+                        # moving
+        t = A*s # stabilize the 
+                # correction step
+        omega = dot(t,s)/dot(t,t) 
+        x += alpha*p + omega*s
+        r = s - omega*t
+        
+        push!(residuals, norm(r)) # residual norm is saved for plotting or analysis.
+        
+\end{verbatim}
+\end{minipage}\\\\
+Finally, there is a check to see whether the residual has become small enough to declare convergence. BiCGSTAB can sometimes not have convergence and instead have a numerical breakdown that prevents the algorithm from continuing. If neither happens, the algorithm updates the scalar rho\_old and goes to the next iteration.\\
+\begin{minipage}[t]{0.45\textwidth}
+\bf{Final Checks:}
+\begin{verbatim}
+        # if residual is below the tolerance then stop
+        if norm(r) < tol
+            println("BiCGSTAB converged in $k iterations")
+            return x, residuals
+        end
+
+        # check for breakdown
+        # if omega = 0, the algorithm cannot continue.
+        if omega == 0
+            println("Breakdown: omega=0")
+            break
+        end
+        
+        rho_old = rho # is updated for the next iteration 
+        end
+    println("BiCGSTAB max iterations reached")
+    return x, residuals
+end
+\end{verbatim}
+\end{minipage}
+
+\section*{Analysis}
+\subsection*{Prior Evaluation Methods}
+Residual norm is the most common method for evaluating iterative methods. The residual is: $r=b-Ax$. This determines how far we are from the correct value b. \cite{Iterative} A small residual means that the computed solution almost satisfies Ax=b. However, a large residual means that the solution is still far from the truth.  
+
+The number of Iterations is also a common method for evaluating iterative methods. This can show how fast a method is. This is because fewer iterations mean faster convergence. What also determines how fast a method is is the CPU time (Runtime). Number of iterations tells you the algorithm's efficiency in terms of convergence per iteration. While runtime tells you the performance for solving a problem on a system.
+
+There are more methods, such as memory usage, matrix-vector multiplications count, and more, but we won’t focus on those. 
+
+\subsection*{Used Evaluation Methods}
+Now, to study convergence rates for different conditions. First, what is a condition number? 
+well-conditioned, easy to solve numerically, while ill-conditioned is not.
+
+For the results, CG, GMRES, and BiCGSTAB were used. They were tested agents three different conditions. Since CG requires the matrix to be symmetric and positive definite, all of our tests will use matrices with these properties to ensure fair comparisons. The code for making the matrices can be seen in "Creating SPD Matrices". 
+
+We then define the conditions. The first being a 10-well-conditioned matrix. Next is a 1000 ill-conditioned matrix. Finally is a 10000000 ill-conditioned matrix. To study their convergence rates, let's look at plotting the residual for every iteration to see how fast convergence occurs. The plotting code can be seen in the code block "Plot Images". Next, lets look at the residual norm, and comparing time and iteration to see how well each algorithm did.
+\\\\
+\begin{minipage}[t]{0.45\textwidth}
+\bf{Creating SPD Matrices:}
+\begin{verbatim}
+using Random, LinearAlgebra
+
+# Fix the seed
+Random.seed!(123)  # <- same seed every time
+
+# Define your SPD matrices and vector b
+n = 5
+A1 = spd_matrix(n, 10)
+A2 = spd_matrix(n, 1000)
+A3 = spd_matrix(n, 1000000000)
+b = randn(n)  # this will always be 
+              # the same with the same seed
+
+# Run conjugate gradient
+x1, res1 = conjugate_gradient(A1, b)
+x2, res2 = conjugate_gradient(A2, b)
+x3, res3 = conjugate_gradient(A3, b)
+\end{verbatim}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.37\textwidth}
+\bf{Plot Images:}
+\begin{verbatim}
+using Plots
+
+plt = plot(1:length(res1), res1, 
+yscale=:log10, label="cond=10",
+           xlabel="Iteration", 
+           ylabel="Residual ||r||")
+plot!(plt, 1:length(res2), res2, 
+label="cond=1000")
+plot!(plt, 1:length(res3), res3,
+label="cond=10000000")
+
+# Save the plot as a PNG (or PDF, SVG, etc.)
+savefig(plt, "cg_residuals.png")
+\end{verbatim}
+\end{minipage}
+
+
+\section*{Final Results}
+Let’s first start by looking at Figures 3,4, and 5.  In the figures, there are residuals for every iteration. Figure 3 shows that condition 10 and 1,000 convergence at iteration 5 and fully drop off at 6. However, 10,000,000 converges at iteration 6 and fully drops off at 7. Visually the Figures 4 and 5 are slightly different, but the most important part is that both have all their conditions converging at Iteration 6. What does this tell us? So far just when it just converges. What about which method performs the best for each condition? Or how long did each method take? The plots are nice but hard to compare, so let's look at the residual values for each method. 
+\begin{figure}[h]
+    \centering
+
+    \begin{subfigure}{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{cg_residuals.png}
+        \caption{CG residuals}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{gmres_residuals.png}
+        \caption{GMRES residuals}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{bicgstab_residuals.png}
+        \caption{BiCGSTAB residuals}
+    \end{subfigure}
+
+    \caption{Residual plots for CG, GMRES, and BiCGSTAB}
+\end{figure}
+
+In Table 1, there are more visible differences between the values. As mentioned earlier, a small residual indicates that the computed solution almost satisfies Ax=b. The orange values show the best residual for that condition. BiCGSTAB over both condition 10 and 1,000 of this metric performed the best. This means BiCGSTAB converged to the most accurate solution for these conditions. However, GMRES performed better on condition 10,000,000. It can be inferred that BiCGSTAB could still be outperformed under higher conditions. 
+\\\\
+\begin{tabular}{lcccc}
+Table 1 \\
+\hline
+Method & Residual (10) & Residual (1000) & Residual (10,000,000) \\
+\hline
+CG    & 2.975240411612116e-16 & 4.010693545804971e-13 & 1.9565518504412037e-9  \\
+GMRES   & 4.734502448698718e-15 & 2.1173778872382343e-13 & \textcolor{orange}{1.1603178684643001e-9}  \\
+BiCGSTAB & \textcolor{orange}{4.5615749882693775e-18} & \textcolor{orange}{1.1902555678395238e-14} & 2.9083651242161397e-9 \\
+\hline
+\end{tabular}
+\\\\\\\\
+
+Table 2 shows the time required by each method. If bigger matrices are being run, a method being slightly faster per solves can save hours or days. This is important if you're solving complex, large, sparse linear systems. The orange is again the best result for each condition. BiCGSTAB did the best for condition 10. However, CG was the quickest for conditions 1,000 and 10,000,000. Even with another iteration in condition 10,000,000, CG still ran faster than the others.   
+\\\\\
+\begin{tabular}{lcccc}
+Table 2 \\
+\hline
+Method & Time (10)& Iteration (10) & Time (1000) & Iteration (1000)  \\
+\hline
+CG    & 0.000301573 & 5 &  \textcolor{orange}{0.000132228} & 5  \\
+GMRES   & 0.000241092 & 5 &  0.000205129 & 5  \\
+BiCGSTAB & \textcolor{orange}{0.000122345} & 5 & 0.000267802 & 5 \\
+\hline
+\end{tabular}\\\\\\
+\begin{tabular}{lcccc}
+\hline
+Method & Time (10,000,000)& Iteration (10,000,000) \\
+\hline
+CG    & \textcolor{orange}{0.000123069} & 6  \\
+GMRES   & 0.000258137 & 5 \\
+BiCGSTAB & 0.000136422 & 5 \\
+\hline
+\end{tabular}
+\\\\
+
+Based on these results, it can be assumed that Tables 1 and 2 don't seem to have a correlation. This can be deduced since CG had the worst residual results, but doesn't always have the best time results for every condition. Same with BiCGSTAB, this method has the best residual results for two conditions, but has the best time for condition 10, and then the worst time result for condition 1,000. 
+
+\section*{Conclusion}
+All in all, with proven results and circumstances that BiCGSTAB had the most accurate convergence and CG was the fastest to converge. This can be seen in Tables 1 and 2. CG being faster might be likely due to how it builds optimal search directions that avoid redoing work. BiCGSTAB being more accurate might be because its update formula directly forces the residual to be small and smooth in each iteration. GMRES overall didn't preform the worst or the best, and it did get better in Table 1. If I were to continue this study, I would perform more tests with GMRES and BiCGSTAB to see if GMRES would do better for higher conditions. 
+
+% ---- Bibliography ----
+\bibliographystyle{refs-style}
+\bibliography{refs}
+%
+\end{document}
